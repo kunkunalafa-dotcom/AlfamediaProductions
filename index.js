@@ -148,3 +148,11 @@ bot.on('text', async (ctx) => {
 
 bot.launch();
 console.log('Cyber-Neon Kun Alfa Bot aktif!');
+
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 8000;
+
+app.get('/', (req, res) => res.send('Cyber-Neon kunalfa_bot aktif ⚡'));
+
+app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
