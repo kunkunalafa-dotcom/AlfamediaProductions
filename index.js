@@ -1,45 +1,34 @@
 require('dotenv').config();
 const { Telegraf } = require('telegraf');
-const express = require('express');
+const OpenAI = require('openai');
 
-// ===== EXPRESS =====
-const app = express();
-const PORT = process.env.PORT || 8000;
-
-app.get('/', (req, res) => {
-  res.send('Bot is running 🚀');
-});
-
-app.listen(PORT, () => {
-  console.log('Server jalan di port ' + PORT);
-});
-
-// ===== BOT =====
 const bot = new Telegraf(process.env.BOT_TOKEN);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// ===== START =====
 bot.start((ctx) => {
-  ctx.reply('Selamat datang! Klik tombol:', {
+  ctx.reply('Selamat datang! Pilih channel YouTube favoritmu:', {
     reply_markup: {
       inline_keyboard: [
-        [{ text: 'YouTube', url: 'https://youtube.com' }]
+        [
+          { text: 'Channel A', url: 'https://youtube.com/channelA' },
+          { text: 'Channel B', url: 'https://youtube.com/channelB' }
+        ],
+        [{ text: 'Channel C', url: 'https://youtube.com/channelC' }]
       ]
     }
   });
 });
 
-// ===== TEXT =====
-bot.on('text', (ctx) => {
-  ctx.reply('⚡ Gunakan tombol menu ya!');
+bot.on('text', async (ctx) => {
+  const userMessage = ctx.message.text;
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [{ role: 'user', content: userMessage }]
+  });
+
+  ctx.reply(response.choices[0].message.content);
 });
 
-// ===== LAUNCH =====
-setTimeout(() => {
-  bot.launch()
-    .then(() => console.log('Bot aktif'))
-    .catch(err => console.error(err));
-}, 3000);
-
-// ===== SAFE EXIT =====
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+bot.launch();
+console.log('Bot Telegram Basic siap jalan!');
