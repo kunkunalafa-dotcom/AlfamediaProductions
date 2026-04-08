@@ -6,22 +6,18 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-app.get('/', (req, res) => {
-  res.send('Bot is running 🚀');
-});
+app.get('/', (req, res) => res.send('Bot is running 🚀'));
 
-app.listen(PORT, () => {
-  console.log('🌐 Server jalan di port ' + PORT);
-});
+app.listen(PORT, () => console.log('🌐 Server jalan di port ' + PORT));
 
-// ===== INIT =====
+// ===== INIT BOT =====
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(session());
 
 const botUsername = process.env.BOT_USERNAME || 'kunalfabot';
 const SIX_HOURS = 6 * 60 * 60 * 1000;
 
-// ===== LINK =====
+// ===== LINK PANEL =====
 const links = {
   musicOfficial: 'https://www.youtube.com/@Kun-Alfa',
   kunAlfaTopic: 'https://www.youtube.com/channel/UCfDi1Tm4C3L8R9BfvqiSnLg',
@@ -86,21 +82,16 @@ bot.on('callback_query', async (ctx) => {
 
   if (data === 'about') {
     await ctx.answerCbQuery();
-    return ctx.reply(
-      '⚡ Kun Alfa Bot\nAkses semua link dari panel 🙌'
-    );
+    return ctx.reply('⚡ Kun Alfa Bot\nAkses semua link dari panel 🙌');
   }
 });
 
 // ===== START =====
 bot.start(async (ctx) => {
-  await ctx.reply(
-    'Selamat datang ⚡\nKlik tombol untuk membuka panel:',
-    { reply_markup: collapsedButton }
-  );
+  await ctx.reply('Selamat datang ⚡\nKlik tombol untuk membuka panel:', { reply_markup: collapsedButton });
 });
 
-// ===== TEXT (TANPA AI, STABIL) =====
+// ===== TEXT (OFFLINE) =====
 bot.on('text', async (ctx) => {
   if (!ctx.session) ctx.session = {};
   const now = Date.now();
@@ -109,22 +100,14 @@ bot.on('text', async (ctx) => {
   if (!ctx.session.started || now - lastSeen > SIX_HOURS) {
     ctx.session.started = true;
     ctx.session.lastSeen = now;
-
-    await ctx.reply(
-      'Selamat datang kembali ⚡\nKlik panel di bawah:',
-      { reply_markup: collapsedButton }
-    );
+    await ctx.reply('Selamat datang kembali ⚡\nKlik panel di bawah:', { reply_markup: collapsedButton });
   } else {
     ctx.session.lastSeen = now;
-
-    await ctx.reply(
-      '⚡ Gunakan tombol panel untuk akses semua link ya 🔥',
-      { reply_markup: collapsedButton }
-    );
+    await ctx.reply('⚡ Gunakan tombol panel untuk akses semua link ya 🔥', { reply_markup: collapsedButton });
   }
 });
 
-// ===== START BOT (DELAY BIAR KOYEB AMAN) =====
+// ===== START BOT =====
 setTimeout(() => {
   bot.launch()
     .then(() => console.log('🤖 Bot aktif'))
