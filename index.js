@@ -1,9 +1,8 @@
 require('dotenv').config();
 const { Telegraf } = require('telegraf');
-const OpenAI = require('openai');
 const express = require('express');
 
-// ===== EXPRESS (BIAR KOYEB TIDAK UNHEALTHY) =====
+// ===== EXPRESS =====
 const app = express();
 const PORT = process.env.PORT || 8000;
 
@@ -16,41 +15,31 @@ app.listen(PORT, () => {
 });
 
 // ===== BOT =====
-
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
 // ===== START =====
 bot.start((ctx) => {
-  ctx.reply('Selamat datang! Pilih channel YouTube favoritmu:', {
+  ctx.reply('Selamat datang! Klik tombol:', {
     reply_markup: {
       inline_keyboard: [
-        [
-          { text: 'Channel A', url: 'https://youtube.com/channelA' },
-          { text: 'Channel B', url: 'https://youtube.com/channelB' }
-        ],
-        [{ text: 'Channel C', url: 'https://youtube.com/channelC' }]
+        [{ text: 'YouTube', url: 'https://youtube.com' }]
       ]
     }
   });
 });
 
-// ===== AI CHAT =====
-bot.on('text', async (ctx) => {
-  try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: ctx.message.text }]
-    });
-
-    ctx.reply(response.choices[0].message.content);
-  } catch (err) {
-    console.error(err);
-    ctx.reply('Error, coba lagi nanti');
-  }
+// ===== TEXT =====
+bot.on('text', (ctx) => {
+  ctx.reply('⚡ Gunakan tombol menu ya!');
 });
 
-// ===== START BOT (DELAY BIAR STABIL) =====
+// ===== LAUNCH =====
 setTimeout(() => {
   bot.launch()
     .then(() => console.log('Bot aktif'))
     .catch(err => console.error(err));
 }, 3000);
+
+// ===== SAFE EXIT =====
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
