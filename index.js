@@ -16,8 +16,7 @@ app.listen(PORT, () => {
 });
 
 // ===== BOT =====
-const bot = new Telegraf(process.env.BOT_TOKEN);
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
 
 // ===== START =====
 bot.start((ctx) => {
