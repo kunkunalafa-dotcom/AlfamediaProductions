@@ -1,7 +1,7 @@
 {
   "name": "telegram-bot-basic",
   "version": "1.0.0",
-  "description": "Bot Telegram Basic dengan OpenAI",
+  "description": "Bot Telegram Basic tanpa AI",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -9,6 +9,6 @@
   "dependencies": {
     "dotenv": "^16.0.0",
     "telegraf": "^4.12.2",
-    "openai": "^4.25.0"
+    "express": "^4.19.2"
   }
 }
