@@ -1,7 +1,9 @@
 require('dotenv').config();
 const { Telegraf, session } = require('telegraf');
 const OpenAI = require('openai');
+const express = require('express');
 
+// ===== INIT =====
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(session());
 
@@ -9,13 +11,13 @@ let openai;
 try {
   openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 } catch (err) {
-  console.warn('⚡ OpenAI API tidak aktif / key hilang.');
+  console.warn('⚡ OpenAI tidak aktif');
 }
 
 const botUsername = process.env.BOT_USERNAME || 'kunalfabot';
 const SIX_HOURS = 6 * 60 * 60 * 1000;
 
-// Link resmi Kun Alfa dan akun lain bisa ditambahkan di sini
+// ===== LINK =====
 const links = {
   musicOfficial: 'https://www.youtube.com/@Kun-Alfa',
   kunAlfaTopic: 'https://www.youtube.com/channel/UCfDi1Tm4C3L8R9BfvqiSnLg',
@@ -29,7 +31,7 @@ const links = {
   komunitasTG: 'https://t.me/Music_positif'
 };
 
-// Cyber-Neon Panel
+// ===== PANEL =====
 const cyberPanel = [
   [
     { text: 'Music', url: links.musicOfficial },
@@ -60,55 +62,52 @@ const cyberPanel = [
   ]
 ];
 
-// Tombol collapse
 const collapsedButton = {
   inline_keyboard: [
     [{ text: '📂 Panel Kun Alfa — Neon Mode', callback_data: 'open_panel' }]
   ]
 };
 
-// Handler AI aman (catch error jika API offline)
+// ===== AI HANDLER =====
 async function handleAI(ctx) {
   if (!openai) {
     return ctx.reply(
-      '⚡ AI lagi offline.\nKlik panel untuk akses semua link ya 🔥',
+      '⚡ AI offline.\nKlik panel untuk akses link 🔥',
       { reply_markup: collapsedButton }
     );
   }
-
-  const userMessage = ctx.message.text;
 
   try {
     const response = await openai.chat.completions.create({
       model: process.env.MODEL || 'gpt-5-mini',
       messages: [
-        { role: 'system', content: `Kamu adalah asisten admin / Qodam Kun Alfa.` },
-        { role: 'user', content: userMessage }
+        { role: 'system', content: 'Kamu asisten Kun Alfa.' },
+        { role: 'user', content: ctx.message.text }
       ],
-      max_tokens: 300
+      max_tokens: 200
     });
 
-    let botReply = response.choices[0].message.content;
-    botReply += `\n\n⚡ Panel lengkap ada di tombol "📂 Panel Kun Alfa — Neon Mode"`;
+    let reply = response.choices[0].message.content;
+    reply += '\n\n⚡ Gunakan tombol panel untuk akses semua link';
 
-    await ctx.reply(botReply, { reply_markup: collapsedButton });
-  } catch (e) {
-    console.error('OpenAI error:', e);
+    await ctx.reply(reply, { reply_markup: collapsedButton });
+
+  } catch (err) {
+    console.error('AI error:', err);
     await ctx.reply(
-      '⚡ AI tidak dapat merespons.\nGunakan tombol panel untuk akses semua link 🔥',
+      '⚡ AI tidak tersedia.\nGunakan tombol panel ya 🔥',
       { reply_markup: collapsedButton }
     );
   }
 }
 
-// Callback Panel
+// ===== CALLBACK =====
 bot.on('callback_query', async (ctx) => {
   const data = ctx.callbackQuery.data;
 
   if (data === 'open_panel') {
     await ctx.answerCbQuery();
-    return ctx.reply('⚡ **Cyber-Neon Panel Kun Alfa** ⚡\nPilih menu:', {
-      parse_mode: 'Markdown',
+    return ctx.reply('⚡ Cyber-Neon Panel Kun Alfa ⚡', {
       reply_markup: { inline_keyboard: cyberPanel }
     });
   }
@@ -116,22 +115,20 @@ bot.on('callback_query', async (ctx) => {
   if (data === 'about') {
     await ctx.answerCbQuery();
     return ctx.reply(
-      `Bot resmi Kun Alfa ⚡\n` +
-      `Aman, ringan, server hemat.\n` +
-      `Gunakan dengan bijak 🙏`
+      'Bot resmi Kun Alfa ⚡\nAman & ringan.\nAlfa Media Productions'
     );
   }
 });
 
-// Start
-bot.start(async (ctx) => {
-  await ctx.reply(
-    'Selamat datang ⚡\nKlik tombol untuk membuka panel neon:',
+// ===== START =====
+bot.start((ctx) => {
+  ctx.reply(
+    'Selamat datang ⚡\nKlik tombol untuk buka panel:',
     { reply_markup: collapsedButton }
   );
 });
 
-// Event pesan
+// ===== TEXT =====
 bot.on('text', async (ctx) => {
   if (!ctx.session) ctx.session = {};
   const now = Date.now();
@@ -142,7 +139,7 @@ bot.on('text', async (ctx) => {
     ctx.session.lastSeen = now;
 
     await ctx.reply(
-      'Selamat datang kembali ⚡\nKlik tombol panel di bawah:',
+      'Selamat datang kembali ⚡\nKlik panel:',
       { reply_markup: collapsedButton }
     );
   } else {
@@ -151,6 +148,18 @@ bot.on('text', async (ctx) => {
   }
 });
 
-// Launch
+// ===== WEB SERVER (WAJIB UNTUK KOYEB) =====
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Bot is running');
+});
+
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
+  console.log('Web server aktif di port ' + PORT);
+});
+
+// ===== LAUNCH =====
 bot.launch();
-console.log('⚡ Cyber-Neon Kun Alfa Bot aktif! (AI optional)');
+console.log('⚡ Bot aktif & stabil!');
