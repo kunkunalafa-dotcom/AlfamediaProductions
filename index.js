@@ -1,18 +1,10 @@
 require('dotenv').config();
 const { Telegraf, session } = require('telegraf');
-const OpenAI = require('openai');
 const express = require('express');
 
 // ===== INIT =====
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(session());
-
-let openai;
-try {
-  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-} catch (err) {
-  console.warn('⚡ OpenAI tidak aktif');
-}
 
 const botUsername = process.env.BOT_USERNAME || 'kunalfabot';
 const SIX_HOURS = 6 * 60 * 60 * 1000;
@@ -54,52 +46,16 @@ const cyberPanel = [
   ],
   [
     { text: 'Share TG', url: `https://t.me/share/url?url=https://t.me/${botUsername}` },
-    { text: 'WA', url: `https://wa.me/?text=Coba%20https://t.me/${botUsername}` },
-    { text: 'FB', url: `https://www.facebook.com/sharer/sharer.php?u=https://t.me/${botUsername}` }
-  ],
-  [
-    { text: 'X/Twitter', url: `https://twitter.com/intent/tweet?text=Coba%20bot%20ini%20https://t.me/${botUsername}` }
+    { text: 'WA', url: `https://wa.me/?text=Coba%20https://t.me/${botUsername}` }
   ]
 ];
 
+// ===== TOMBOL AWAL =====
 const collapsedButton = {
   inline_keyboard: [
     [{ text: '📂 Panel Kun Alfa — Neon Mode', callback_data: 'open_panel' }]
   ]
 };
-
-// ===== AI HANDLER =====
-async function handleAI(ctx) {
-  if (!openai) {
-    return ctx.reply(
-      '⚡ AI offline.\nKlik panel untuk akses link 🔥',
-      { reply_markup: collapsedButton }
-    );
-  }
-
-  try {
-    const response = await openai.chat.completions.create({
-      model: process.env.MODEL || 'gpt-5-mini',
-      messages: [
-        { role: 'system', content: 'Kamu asisten Kun Alfa.' },
-        { role: 'user', content: ctx.message.text }
-      ],
-      max_tokens: 200
-    });
-
-    let reply = response.choices[0].message.content;
-    reply += '\n\n⚡ Gunakan tombol panel untuk akses semua link';
-
-    await ctx.reply(reply, { reply_markup: collapsedButton });
-
-  } catch (err) {
-    console.error('AI error:', err);
-    await ctx.reply(
-      '⚡ AI tidak tersedia.\nGunakan tombol panel ya 🔥',
-      { reply_markup: collapsedButton }
-    );
-  }
-}
 
 // ===== CALLBACK =====
 bot.on('callback_query', async (ctx) => {
@@ -107,7 +63,7 @@ bot.on('callback_query', async (ctx) => {
 
   if (data === 'open_panel') {
     await ctx.answerCbQuery();
-    return ctx.reply('⚡ Cyber-Neon Panel Kun Alfa ⚡', {
+    return ctx.reply('⚡ Cyber-Neon Panel Kun Alfa ⚡\nPilih menu:', {
       reply_markup: { inline_keyboard: cyberPanel }
     });
   }
@@ -115,7 +71,7 @@ bot.on('callback_query', async (ctx) => {
   if (data === 'about') {
     await ctx.answerCbQuery();
     return ctx.reply(
-      'Bot resmi Kun Alfa ⚡\nAman & ringan.\nAlfa Media Productions'
+      '⚡ Kun Alfa Bot\nAlfa Media Productions\nAkses semua link dari panel 🙌'
     );
   }
 });
@@ -128,7 +84,7 @@ bot.start((ctx) => {
   );
 });
 
-// ===== TEXT =====
+// ===== TEXT (TANPA AI) =====
 bot.on('text', async (ctx) => {
   if (!ctx.session) ctx.session = {};
   const now = Date.now();
@@ -139,16 +95,20 @@ bot.on('text', async (ctx) => {
     ctx.session.lastSeen = now;
 
     await ctx.reply(
-      'Selamat datang kembali ⚡\nKlik panel:',
+      'Selamat datang kembali ⚡\nKlik panel di bawah:',
       { reply_markup: collapsedButton }
     );
   } else {
     ctx.session.lastSeen = now;
-    await handleAI(ctx);
+
+    await ctx.reply(
+      '⚡ Gunakan tombol panel untuk akses semua link ya 🔥',
+      { reply_markup: collapsedButton }
+    );
   }
 });
 
-// ===== WEB SERVER (WAJIB UNTUK KOYEB) =====
+// ===== WEB SERVER (WAJIB KOYEB) =====
 const app = express();
 
 app.get('/', (req, res) => {
@@ -157,9 +117,9 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
-  console.log('Web server aktif di port ' + PORT);
+  console.log('Server aktif di port ' + PORT);
 });
 
 // ===== LAUNCH =====
 bot.launch();
-console.log('⚡ Bot aktif & stabil!');
+console.log('⚡ Bot aktif tanpa AI (stabil)');
