@@ -1,15 +1,14 @@
 {
-  "name": "nano-bot",
+  "name": "alfamediabot",
   "version": "1.0.0",
+  "description": "Bot Telegram Cyber-Neon Kun Alfa (Offline / Gratis)",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "telegraf": "^4.12.2",
-    "dotenv": "^16.6.1"
-  },
-  "engines": {
-    "node": "18.x"
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2",
+    "telegraf": "^4.14.2"
   }
 }
